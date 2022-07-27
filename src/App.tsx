@@ -1,50 +1,49 @@
+import { useState } from "react";
 import Input from "./components/Input";
-import { search as ytSearch, searchv2 } from "./service/youtube";
+import { spotifySearch } from "./service/spotify";
+import { youtubeSearch } from "./service/youtube";
+import Toggle from "react-toggle";
+import "react-toggle/style.css";
 
-interface Video {
-  url: string;
-  title: string;
-  thumbnail: string;
-}
-
-interface VideoResponseText {
-  _text: string;
-}
-interface VideResponse {
-  url: VideoResponseText;
-  title: VideoResponseText;
-  thumbnail: VideoResponseText;
-}
+const setIframe = (src: string, title?: string) => {
+  let player = document.getElementById("player");
+  if (player)
+    player.innerHTML = `
+    <iframe
+      width="600"
+      height="300"
+      src="${src}"
+      title="${title}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen;"
+      allowFullScreen
+    />`;
+};
 
 const App = () => {
-  const parseVideo = (videoRes: VideResponse): Video => {
-    return {
-      url: videoRes.url._text,
-      title: videoRes.title._text,
-      thumbnail: videoRes.thumbnail._text,
-    };
+  const [searchApi, setSearchApi] = useState<"Youtube" | "Spotify">("Spotify");
+
+  const toggleApi = (checked: boolean) => {
+    let player = document.getElementById("player");
+    if (player) player.innerHTML = "<div></div>";
+    setSearchApi(checked ? "Youtube" : "Spotify");
   };
 
   const search = async (ev: any) => {
     ev.preventDefault();
     const query = ev.target.busca.value;
-    const { data: videoRes } = await searchv2(query);
-    const video = parseVideo(videoRes);
-    let player = document.getElementById("player");
-    if (player)
-      player.innerHTML = `
-      <iframe
-        width="600"
-        height="300"
-        src="${video?.url}""
-        title="${video.title}"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      ></iframe>`;
+    const { data: video } =
+      searchApi === "Youtube"
+        ? await youtubeSearch(query)
+        : await spotifySearch(query);
+    setIframe(video.url, video?.title);
   };
   return (
     <div className="main">
       <div className="video">
+        <Toggle
+          icons={{ checked: "" }}
+          onChange={(ev) => toggleApi(ev.target.checked)}
+        />
         <form className="input-area" onSubmit={(ev) => search(ev)}>
           <Input placeholder="Procure pelo seu vídeo aqui ..." id="busca" />
           <button type="submit">Buscar</button>

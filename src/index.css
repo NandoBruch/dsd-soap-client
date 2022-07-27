@@ -25,6 +25,18 @@ body {
   width: 600px;
 }
 
+.video .react-toggle {
+  margin-bottom: 10px;
+}
+
+.video .react-toggle .react-toggle-track {
+  background-color: #19ab2c;
+}
+
+.video .react-toggle--checked .react-toggle-track {
+  background-color: red;
+}
+
 .input-area {
   display: flex;
   margin-bottom: 30px;
